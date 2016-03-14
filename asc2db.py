@@ -30,8 +30,9 @@ primary key rid;
 
 
 def init_db():
+    print 'Initialize...'
     response = requests.get(ddl_endpoint, {'ddl': init_ddl % (dn, dn, dn, tn)})
-    print response.status_code
+    print 'Init',response.status_code
 
 
 def asc2adm(data_dir, filename):
@@ -81,7 +82,7 @@ def proc_dir(data_dir):
             if os.path.exists(os.path.join(data_dir, fname + '.tmp')):
                 print 'adm exists, import only'
             else:
-                print 'generating adm'
+                print 'generating adm for',fname
                 asc2adm(data_dir, fname)
             if push_to_asterix(data_dir, fname + '.tmp'):
                 print fname, 'SUCC'
@@ -128,7 +129,7 @@ def main(argv):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
-    # data_dir = "/Volumes/Storage/Home/Xikui/Work/ESRI/small/"
+    # data_dir = "/Volumes/Storage/Home/Xikui/Work/CHRS/small/"
     # print init_db()  # change to two parameter <dataverse name, dataset name>
     # proc_dir(data_dir)
     # direct_push(data_dir)
