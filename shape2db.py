@@ -1,7 +1,7 @@
 #!/bin/python
 
 import os, json
-from asterix_api import appnd_dataset,init_db
+from asterix_api import appnd_dataset,init_db, create_ext_dataset
 
 work_dir = '/Volumes/Storage/Home/Xikui/Work/sample_shape'
 dn = 'Test0'
@@ -26,7 +26,10 @@ primary key rid;
 
 def shape2geojson(filename):
     global work_dir
-    os.system('ogr2ogr -f GeoJSON %s %s' % (os.path.join(work_dir, filename + '.geojson')
+    gj_path = os.path.join(work_dir, filename + '.geojson')
+    if os.path.exists(gj_path):
+        os.system('rm %s'%gj_path)
+    os.system('ogr2ogr -f GeoJSON %s %s' % (gj_path
                                             , os.path.join(work_dir, filename)))
     return filename + '.geojson'
 
@@ -72,7 +75,6 @@ def shape2db(fname, dn, tn):
     gj_fname = shape2geojson(fname)
     feas = load_geoj(gj_fname)
     feas2fadm(fname+'.adm',feas)
-    appnd_dataset(work_dir,fname+'.adm','Test0','GeoShapes','GeoShapeType')
 
 
 def main():
@@ -84,9 +86,7 @@ def main():
     gjname = shape2geojson(fname)
     feas = load_geoj(gjname)
     feas2fadm(fname+'.adm',feas)
-    print appnd_dataset(work_dir,fname+'.adm','Test0','GeoShapes','GeoShapeType')
-    # print adm_fea
-    # print geo2adm(fea['geometry'])
+    print create_ext_dataset(work_dir,fname+'.adm',dn,'GeoShapeType')
 
 
 if __name__ == '__main__':

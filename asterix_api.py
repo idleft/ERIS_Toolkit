@@ -1,5 +1,5 @@
 #!/bin/python
-import os,requests
+import os, requests
 
 api_endpoint = 'http://localhost:19002/'
 update_endpoint = api_endpoint + 'update'
@@ -12,13 +12,15 @@ drop_tmp_ddl = 'user dataverse %s, drop dataset TmpExt if exists;'
 def init_db(ddl):
     print 'Initialize...'
     response = requests.get(ddl_endpoint, {'ddl': ddl})
-    print 'Init',response.status_code
+    print 'Init', response.status_code
 
 
-def create_ext_dataset(data_dir, fname, dn,tn,dt):
+def create_ext_dataset(data_dir, fname, dn, dt):
     cur_ext_path = os.path.join(data_dir, fname)
     cur_ext_ddl = ext_db_sta.replace("TMPPath", 'localhost://' + cur_ext_path)
-    return requests.get(ddl_endpoint, {'ddl': cur_ext_ddl % (dn, dt)}) == 200
+    response = requests.get(ddl_endpoint, {'ddl': cur_ext_ddl % (dn, dt)})
+    return response.status_code == 200
+
 
 # data dir, fname, dataverse_name, dataset name, datatype
 def appnd_dataset(data_dir, fname, dn, tn, dt):
@@ -31,8 +33,10 @@ def appnd_dataset(data_dir, fname, dn, tn, dt):
     res_arr.append(requests.get(ddl_endpoint, {'ddl': drop_tmp_ddl % dn}))
     return res_arr[0].status_code == 200 and res_arr[0].status_code == 200 and res_arr[0].status_code == 200
 
+
 def main():
     return
+
 
 if __name__ == '__main__':
     main()
