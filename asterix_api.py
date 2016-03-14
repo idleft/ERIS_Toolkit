@@ -4,7 +4,7 @@ import os, requests
 api_endpoint = 'http://localhost:19002/'
 update_endpoint = api_endpoint + 'update'
 ddl_endpoint = api_endpoint + 'ddl'
-ext_db_sta = 'use dataverse %s;drop dataset TmpExt if exists;create external dataset TmpExt(%s) using localfs(("path"="TMPPath"),("format"="adm"));'
+ext_db_sta = 'use dataverse %s;drop dataset %s if exists;create external dataset %s(%s) using localfs(("path"="TMPPath"),("format"="adm"));'
 apnd_db_sta = 'use dataverse %s; insert into dataset %s(for $rec in dataset TmpExt return $rec);'
 drop_tmp_ddl = 'user dataverse %s, drop dataset TmpExt if exists;'
 
@@ -15,10 +15,10 @@ def init_db(ddl):
     print 'Init', response.status_code
 
 
-def create_ext_dataset(data_dir, fname, dn, dt):
+def create_ext_dataset(data_dir, fname, dn,tn,dt):
     cur_ext_path = os.path.join(data_dir, fname)
     cur_ext_ddl = ext_db_sta.replace("TMPPath", 'localhost://' + cur_ext_path)
-    response = requests.get(ddl_endpoint, {'ddl': cur_ext_ddl % (dn, dt)})
+    response = requests.get(ddl_endpoint, {'ddl': cur_ext_ddl % (dn,tn,tn, dt)})
     return response.status_code == 200
 
 
