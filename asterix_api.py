@@ -28,7 +28,7 @@ def appnd_dataset(data_dir, fname, dn, tn, dt):
     cur_ext_path = os.path.join(data_dir, fname)
     res_arr = []
     cur_ext_ddl = ext_db_sta.replace("TMPPath", 'localhost://' + cur_ext_path)
-    res_arr.append(requests.get(ddl_endpoint, {'ddl': cur_ext_ddl % (dn, dt)}))
+    res_arr.append(requests.get(ddl_endpoint, {'ddl': cur_ext_ddl % (dn, tn, tn, dt)}))
     res_arr.append(requests.get(update_endpoint, {'statements': apnd_db_sta % (dn, tn)}))  # push to merge table
     res_arr.append(requests.get(ddl_endpoint, {'ddl': drop_tmp_ddl % dn}))
     return res_arr[0].status_code == 200 and res_arr[0].status_code == 200 and res_arr[0].status_code == 200

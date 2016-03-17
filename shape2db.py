@@ -1,7 +1,7 @@
 #!/bin/python
 
 import os, json, getopt, sys
-from asterix_api import appnd_dataset, init_db, create_ext_dataset
+from asterix_api import init_db, create_ext_dataset
 
 work_dir = ''
 dn = 'Test0'

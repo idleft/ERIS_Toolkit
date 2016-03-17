@@ -2,20 +2,20 @@
 import requests
 import json
 import os, sys, getopt
-from requests import ConnectionError, HTTPError
+from asterix_api import init_db, appnd_dataset
 from os import listdir
 
 rid = 1;
 dn = 'ESRI'
 tn = 'Rainfalls'
-http_header = {"content-type": "application/json"}
-api_endpoint = 'http://localhost:19002/'
-update_endpoint = api_endpoint + 'update'
-ddl_endpoint = api_endpoint + 'ddl'
-load_statement = 'use dataverse %s;load dataset %s using localfs(("path"="LOCALPATH"),("format"="adm"));'
-ext_db_sta = 'use dataverse %s;drop dataset TmpExt if exists;create external dataset TmpExt(ERISRecord) using localfs(("path"="TMPPath"),("format"="adm"));'
-apnd_db_sta = 'use dataverse %s; insert into dataset %s(for $rec in dataset TmpExt return $rec);'
-drop_tmp_ddl = 'user dataverse %s, drop dataset TmpExt if exists;'
+# http_header = {"content-type": "application/json"}
+# api_endpoint = 'http://localhost:19002/'
+# update_endpoint = api_endpoint + 'update'
+# ddl_endpoint = api_endpoint + 'ddl'
+# load_statement = 'use dataverse %s;load dataset %s using localfs(("path"="LOCALPATH"),("format"="adm"));'
+# ext_db_sta = 'use dataverse %s;drop dataset TmpExt if exists;create external dataset TmpExt(ERISRecord) using localfs(("path"="TMPPath"),("format"="adm"));'
+# apnd_db_sta = 'use dataverse %s; insert into dataset %s(for $rec in dataset TmpExt return $rec);'
+# drop_tmp_ddl = 'user dataverse %s, drop dataset TmpExt if exists;'
 init_ddl = """drop dataverse %s if exists;
 create dataverse %s;
 use dataverse %s;
@@ -27,12 +27,6 @@ create type ERISRecord as open{rid: int64,
 create dataset %s(ERISRecord)
 primary key rid;
 """
-
-
-def init_db():
-    print 'Initialize...'
-    response = requests.get(ddl_endpoint, {'ddl': init_ddl % (dn, dn, dn, tn)})
-    print 'Init',response.status_code
 
 
 def asc2adm(data_dir, filename):
@@ -66,13 +60,7 @@ def asc2adm(data_dir, filename):
 
 def push_to_asterix(data_dir, fname):
     print 'Try to push: ' + fname
-    cur_ext_path = os.path.join(data_dir, fname)
-    res_arr = []
-    cur_ext_ddl = ext_db_sta.replace("TMPPath", 'localhost://' + cur_ext_path)
-    res_arr.append(requests.get(ddl_endpoint, {'ddl': cur_ext_ddl % dn}))
-    res_arr.append(requests.get(update_endpoint, {'statements': apnd_db_sta % (dn, tn)}))  # push to merge table
-    res_arr.append(requests.get(ddl_endpoint, {'ddl': drop_tmp_ddl % dn}))
-    return res_arr[0].status_code == 200 and res_arr[0].status_code == 200 and res_arr[0].status_code == 200
+    return appnd_dataset(data_dir, fname, dn, tn, 'ERISRecord')
 
 
 def proc_dir(data_dir):
@@ -82,7 +70,7 @@ def proc_dir(data_dir):
             if os.path.exists(os.path.join(data_dir, fname + '.tmp')):
                 print 'adm exists, import only'
             else:
-                print 'generating adm for',fname
+                print 'generating adm for', fname
                 asc2adm(data_dir, fname)
             if push_to_asterix(data_dir, fname + '.tmp'):
                 print fname, 'SUCC'
@@ -123,7 +111,7 @@ def main(argv):
         elif opt == "-i":
             data_dir = arg
     if mode == 'create':
-        init_db()
+        init_db(init_ddl % (dn, dn, dn, tn))
     proc_dir(data_dir)
 
 
